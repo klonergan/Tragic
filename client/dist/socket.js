@@ -1,2 +1,10 @@
+// import io from 'socket.io-client';
+
 // socket connection test
-io.connect('http://localhost:80');
+const socket = io.connect('http://localhost:80');
+
+socket.emit('hi', 'some shit');
+
+socket.on('follow', (data) => {
+  console.log(data);
+});
