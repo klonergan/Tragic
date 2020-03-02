@@ -143,6 +143,9 @@ class GameState {
   play(player, i) {
     let card = {};
     if (player === 1) {
+      if (this.p1Hand[i].cost > this.p1Avail) {
+        return;
+      }
       card = this.p1Hand.splice(i, 1);
       this.priority = true;
       // if the card is a resource add to their pool
@@ -151,7 +154,11 @@ class GameState {
         this.p1Avail += 1;
         return;
       }
-    } else {
+      this.p1Avail -= card.cost;
+    } else if (player === 2) {
+      if (this.p2Hand[i].cost > this.p2Avail) {
+        return;
+      }
       card = this.p2Hand.splice(i, 1);
       this.priority = false;
       if (card.type === 'resource') {
@@ -159,6 +166,7 @@ class GameState {
         this.p2Avail += 1;
         return;
       }
+      this.p2Avail -= card.cost;
     }
     this.p1Pass = false;
     this.p2Pass = false;

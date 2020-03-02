@@ -13,6 +13,10 @@ p1Deck.shuffle();
 const p2Deck = new TestDeck(2);
 p2Deck.shuffle();
 const state = new GameState(p1Deck.cards, p2Deck.cards);
+for (let i = 0; i < 7; i += 1) {
+  state.p1Hand.push(p1Deck.draw());
+  state.p2Hand.push(p2Deck.draw());
+}
 const playerIds = {};
 
 
