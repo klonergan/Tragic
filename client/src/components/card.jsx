@@ -33,10 +33,23 @@ const RulesBox = styled.div`
   justify-content: center;
 `;
 
+const Bottom = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+`;
+
+const Act = styled.div`
+  justify-self: flex-start;
+  color: red;
+`;
+
 const AD = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
+  justify-self: flex-end;
+  order: 1;
 `;
 
 const ImgWrapper = styled.div`
@@ -81,7 +94,12 @@ export default function Card(props) {
           {props.card.type}
         </TypeLine>
         <RulesBox>{props.card.rulesText}</RulesBox>
-        <AD>{`${props.card.a}/${props.card.d}`}</AD>
+        <Bottom>
+          <Act>
+            {props.card.act ? 'Activated (attacked)' : null}
+          </Act>
+          <AD>{`${props.card.a}/${props.card.d}`}</AD>
+        </Bottom>
       </OutterWrapper>
     );
   }

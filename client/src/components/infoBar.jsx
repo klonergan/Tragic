@@ -1,5 +1,7 @@
+/* eslint-disable react/destructuring-assignment */
 import React from 'react';
 import styled from 'styled-components';
+import Phase from './phase.jsx';
 
 const Wrapper = styled.div`
   height: 750px;
@@ -30,6 +32,7 @@ export default function InfoBar(props) {
           {`Opp's Avail Res: ${props.state.oppAvail}`}
         </p>
       </InfoBox>
+      <Phase state={props.state} pass={props.pass}/>
       <InfoBox>
         <p>
           {`Your Life: ${props.state.yourLife}`}

@@ -4,7 +4,10 @@ import React from 'react';
 import io from 'socket.io-client';
 import styled from 'styled-components';
 import Hand from './hand.jsx';
+import Field from './field.jsx';
+import Stack from './stack.jsx';
 import InfoBar from './infoBar.jsx';
+
 
 const OuterWrapper = styled.div`
   display: flex;
@@ -14,11 +17,18 @@ const OuterWrapper = styled.div`
 `;
 
 const InfoWrapper = styled.div`
-  display:flex;
+  display: flex;
   flex-direction: column;
   justify-content: space-between;
   width: 20%;
   height: 100%;
+`;
+
+const FieldHandWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 750px;
 `;
 
 export default class App extends React.Component {
@@ -45,11 +55,14 @@ export default class App extends React.Component {
         oppAvail: 0,
       },
       socket: null,
+      attackers: [],
+      attackerObj: {},
     };
 
     // socket.emit('event', 'data');
     this.play = this.play.bind(this);
     this.pass = this.pass.bind(this);
+    this.fieldPlay = this.fieldPlay.bind(this);
   }
 
 
@@ -62,23 +75,48 @@ export default class App extends React.Component {
     });
   }
 
-
+  // for playing from hand
   play(index) {
     this.state.socket.emit('play', JSON.stringify(index));
   }
 
   pass() {
+    if (this.state.attackers.length !== 0) {
+
+      // make sure to transmit numbers
+      for (let i = 0; i < this.state.attackers.length; i += 1) {
+        this.state.attackers[i] = Number(this.state.attackers[i]);
+      }
+      console.log(this.state.attackers);
+      this.state.socket.emit('attack', this.state.attackers);
+      this.state.attackers = [];
+      this.state.attackerObj = {};
+      return;
+    }
     this.state.socket.emit('pass');
+  }
+
+  // for cards on your side of the field
+  fieldPlay(action, i, j) {
+    if (this.state.gameState.phase === 'attack') {
+      this.state.attackerObj[i] = !this.state.attackerObj[i];
+      this.state.attackers = Object.keys(this.state.attackerObj);
+    }
   }
 
   render() {
     return (
       <OuterWrapper>
         <InfoWrapper>
-          <InfoBar state={this.state.gameState} />
+          <InfoBar state={this.state.gameState} pass={this.pass} />
         </InfoWrapper>
-        <Hand hand={this.state.gameState.hand} play={this.play} />
-        {JSON.stringify(this.state.gameState)}
+        <FieldHandWrapper>
+          <Field field={this.state.gameState.oppField} owner="Opponent's" />
+          <Field field={this.state.gameState.yourField} owner="Your" play={this.fieldPlay} />
+          <Hand hand={this.state.gameState.hand} play={this.play} />
+        </FieldHandWrapper>
+        <Stack stack={this.state.gameState.stack} />
+        {/* JSON.stringify(this.state.gameState) */}
       </OuterWrapper>
     );
   }

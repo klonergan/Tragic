@@ -7,6 +7,10 @@ class GameState {
     this.phaseIndex = 2;
     this.phase = phaseList[this.phaseIndex];
     this.priority = true;
+    // victory will be represented with winning player's number
+    this.victory = 0;
+    this.attacking = [];
+    this.blocking = [];
 
     this.p1Field = [];
     this.p2Field = [];
@@ -30,6 +34,10 @@ class GameState {
     this.step = this.step.bind(this);
     this.pass = this.pass.bind(this);
     this.play = this.play.bind(this);
+    this.checkState = this.checkState.bind(this);
+    this.attack = this.attack.bind(this);
+    this.block = this.block.bind(this);
+    this.damage = this.damage.bind(this);
   }
 
   private(player) {
@@ -52,6 +60,7 @@ class GameState {
         oppLife: this.p2Life,
         yourAvail: this.p1Avail,
         oppAvail: this.p2Avail,
+        victory: this.victory,
       };
     }
     return {
@@ -72,6 +81,7 @@ class GameState {
       oppLife: this.p1Life,
       yourAvail: this.p2Avail,
       oppAvail: this.p1Avail,
+      victory: this.victory,
     };
   }
 
@@ -97,7 +107,10 @@ class GameState {
         } else if (this.phase === 'draw' && this.turn % 2 === 1) {
           const card = this.p2Deck.pop();
           this.p2Hand.push(card);
+        } else if (this.phase === 'damage') {
+          this.damage();
         }
+      // going to next turn
       } else {
         this.turn += 1;
         this.phaseIndex = 0;
@@ -106,11 +119,17 @@ class GameState {
         for (let i = 0; i < this.p1Field.length; i += 1) {
           if (this.p1Field[i].type === 'being') {
             this.p1Field[i].hp = this.p1Field.d;
+            if (this.turn % 2 === 0) {
+              this.p1Field[i].act = false;
+            }
           }
         }
         for (let i = 0; i < this.p2Field.length; i += 1) {
           if (this.p2Field[i].type === 'being') {
             this.p2Field[i].hp = this.p2Field.d;
+            if (this.turn % 2 === 1) {
+              this.p2Field[i].act = false;
+            }
           }
         }
         if (this.turn % 2 === 0) {
@@ -132,9 +151,11 @@ class GameState {
   pass(player) {
     if (player === 1) {
       this.p1Pass = true;
+      this.priority = !this.priority;
     }
     if (player === 2) {
       this.p2Pass = true;
+      this.priority = !this.priority;
     }
     if (this.p1Pass && this.p2Pass) {
       this.step();
@@ -165,6 +186,7 @@ class GameState {
       if (this.p2Hand[i].type === 'resource' && (this.turn % 2 !== 1 || this.phase !== 'main')) {
         return;
       }
+      // eslint-disable-next-line prefer-destructuring
       card = this.p2Hand.splice(i, 1)[0];
       if (card.type === 'resource') {
         this.p2Resource += 1;
@@ -179,6 +201,94 @@ class GameState {
     this.p1Pass = false;
     this.p2Pass = false;
     this.stack.push(card);
+  }
+
+  checkState() {
+    for (let i = 0; i < this.p1Field.length; i += 1) {
+      if (this.p1Field[i].type === 'being' && this.p1Field.hp <= 0) {
+        this.p1Field.splice(i, 1);
+        i -= 1;
+      }
+    }
+    for (let i = 0; i < this.p2Field.length; i += 1) {
+      if (this.p2Field[i].type === 'being' && this.p2Field.hp <= 0) {
+        this.p2Field.splice(i, 1);
+        i -= 1;
+      }
+    }
+    if (this.p1Life <= 0) {
+      this.victory = 2;
+    } if (this.p2Life <= 0) {
+      this.victory = 1;
+    }
+  }
+
+  attack(player, arr) {
+    if (player === 1 && this.turn % 2 === 0 && this.phase === 'attack') {
+      this.attacking = arr;
+      for (let i = 0; i < arr.length; i += 1) {
+        if (!this.p1Field[arr[i]].act) {
+          this.p1Field[arr[i]].act = true;
+        }
+      }
+    } else if (player === 2 && this.turn % 2 === 1 && this.phase === 'attack') {
+      this.attacking = arr;
+      for (let i = 0; i < arr.length; i += 1) {
+        if (!this.p2Field[arr[i]].act) {
+          this.p2Field[arr[i]].act = true;
+        }
+      }
+    }
+  }
+
+  block(player, arrOfTuples) {
+    // in each tuple, first number is blocker index, second is attacker index
+    if (player === 1 && this.phase === 'block' && this.turn % 2 === 1) {
+      this.blocking = arrOfTuples;
+    } else if (player === 2 && this.phase === 'block' && this.turn % 2 === 0) {
+      this.blocking = arrOfTuples;
+    }
+  }
+
+  damage() {
+    // keep track of which attackers dealt damage already
+    const dealt = {};
+    console.log('damage called');
+    // p1 attacking p2 blocking
+    if (this.turn % 2 === 0) {
+      for (let i = 0; i < this.blocking.length; i += 1) {
+        // blockers deal damage
+        this.p1Field[this.blocking[i][1]].hp -= this.p2Field[this.blocking[i][0]].a;
+        if (!dealt[this.blocking[i][1]]) {
+          dealt[this.blocking[i][1]] = true;
+          this.p2Field[this.blocking[i][0]].hp -= this.p1Field[this.blocking[i][1]].a;
+        }
+      }
+      for (let i = 0; i < this.attacking.length; i += 1) {
+        if (!dealt[this.attacking[i]]) {
+          this.p2Life -= this.p1Field[this.attacking[i]].a;
+        }
+      }
+
+    // p2 attacking p1 blocking
+    } else {
+      for (let i = 0; i < this.blocking.length; i += 1) {
+        // blockers deal damage
+        this.p2Field[this.blocking[i][1]].hp -= this.p1Field[this.blocking[i][0]].a;
+        if (!dealt[this.blocking[i][1]]) {
+          dealt[this.blocking[i][1]] = true;
+          this.p1Field[this.blocking[i][0]].hp -= this.p2Field[this.blocking[i][1]].a;
+        }
+      }
+      for (let i = 0; i < this.attacking.length; i += 1) {
+        if (!dealt[this.attacking[i]]) {
+          this.p1Life -= this.p2Field[this.attacking[i]].a;
+        }
+      }
+    }
+    this.blocking = [];
+    this.attacking = [];
+    this.checkState();
   }
 }
 

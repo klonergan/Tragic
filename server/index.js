@@ -54,6 +54,13 @@ io.on('connection', (socket) => {
     io.to(playerIds[1]).emit('state', state.private(1));
     io.to(playerIds[2]).emit('state', state.private(2));
   });
+
+  // attack command from player
+  socket.on('attack', (data) => {
+    state.attack(player, data);
+    io.to(playerIds[1]).emit('state', state.private(1));
+    io.to(playerIds[2]).emit('state', state.private(2));
+  });
   // socket.on('hi', (data) => {
   //   io.sockets.emit('hi', data);
   //   console.log(data);
