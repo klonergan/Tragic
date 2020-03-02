@@ -37,6 +37,10 @@ io.on('connection', (socket) => {
   playerIds[player] = socket.id;
   io.to(playerIds[player]).emit('state', state.private(player));
 
+  socket.on('hi', (data) => {
+    console.log('hi', data);
+  });
+
   // io.to(`${player}`).emit('state', state.private(player));
   socket.on('pass', () => {
     state.pass(player);
@@ -45,6 +49,7 @@ io.on('connection', (socket) => {
   });
   // player gives play command with index of card clicked in their hand
   socket.on('play', (data) => {
+    console.log('played: ', player, data);
     state.play(player, Number(data));
     io.to(playerIds[1]).emit('state', state.private(1));
     io.to(playerIds[2]).emit('state', state.private(2));

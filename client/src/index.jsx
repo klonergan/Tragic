@@ -1,3 +1,4 @@
+/* eslint-disable import/extensions */
 // top level for react
 import React from 'react';
 import ReactDOM from 'react-dom';

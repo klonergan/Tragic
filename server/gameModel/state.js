@@ -29,6 +29,7 @@ class GameState {
     this.private = this.private.bind(this);
     this.step = this.step.bind(this);
     this.pass = this.pass.bind(this);
+    this.play = this.play.bind(this);
   }
 
   private(player) {
@@ -142,31 +143,38 @@ class GameState {
 
   play(player, i) {
     let card = {};
-    if (player === 1) {
+    if (player === 1 && this.priority === true) {
       if (this.p1Hand[i].cost > this.p1Avail) {
         return;
       }
-      card = this.p1Hand.splice(i, 1);
-      this.priority = true;
+      // eslint-disable-next-line prefer-destructuring
+      card = this.p1Hand.splice(i, 1)[0];
       // if the card is a resource add to their pool
-      if (card.type === 'resource') {
+      if (card.type === 'resource' && this.turn % 2 === 0 && this.phase === 'main') {
         this.p1Resource += 1;
         this.p1Avail += 1;
         return;
       }
       this.p1Avail -= card.cost;
     } else if (player === 2) {
+      // don't allow cards with cost more than available resource to be played
       if (this.p2Hand[i].cost > this.p2Avail) {
         return;
+        // don't allow land plays outside of own main phase
       }
-      card = this.p2Hand.splice(i, 1);
-      this.priority = false;
+      if (this.p2Hand[i].type === 'resource' && (this.turn % 2 !== 1 || this.phase !== 'main')) {
+        return;
+      }
+      card = this.p2Hand.splice(i, 1)[0];
       if (card.type === 'resource') {
         this.p2Resource += 1;
         this.p2Avail += 1;
         return;
       }
       this.p2Avail -= card.cost;
+    }
+    if (card === {}) {
+      return;
     }
     this.p1Pass = false;
     this.p2Pass = false;
