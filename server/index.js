@@ -1,6 +1,16 @@
 const express = require('express');
 const path = require('path');
-const socket = require('socket.io');
+const socketio = require('socket.io');
+// import game models
+const TestDeck = require('./gameModel/things/decks/test.js');
+
+const p1Deck = new TestDeck();
+p1Deck.cards[0] = 1;
+const a = p1Deck.cards;
+console.log(a);
+p1Deck.shuffle.call(p1Deck);
+console.log(a);
+
 
 // express set up
 const app = express();
@@ -10,12 +20,12 @@ const server = app.listen(port, () => {
 });
 
 // socket.io set up
-const io = socket(server, { pingTimeout: 10000, pingInterval: 5000 });
-io.on('connection', (sock) => {
-  console.log('made socket connection', sock.id);
-  // sock.on('trigger', () => {})
+const io = socketio(server, { pingTimeout: 10000, pingInterval: 5000 });
+io.on('connection', (socket) => {
+  console.log('made socket connection', socket.id);
+  // socket.on('trigger', () => {})
   io.sockets.emit('follow', { key: 'value' });
-  sock.on('hi', (data) => {
+  socket.on('hi', (data) => {
     io.sockets.emit('hi', data);
     console.log(data);
   });
