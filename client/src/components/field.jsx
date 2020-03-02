@@ -14,7 +14,7 @@ export default function Field(props) {
   return (
     <Wrapper>
       <p>{`${props.owner} field`}</p>
-      { props.field.map((card, i) => <Card card={card} i={i} play={() => { props.play('attack', i); }} />) }
+      { props.field.map((card, i) => <Card card={card} i={i} play={() => { props.play('action', i); }} />) }
     </Wrapper>
   );
 }

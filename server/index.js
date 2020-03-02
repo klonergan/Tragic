@@ -61,6 +61,12 @@ io.on('connection', (socket) => {
     io.to(playerIds[1]).emit('state', state.private(1));
     io.to(playerIds[2]).emit('state', state.private(2));
   });
+
+  // block command from player
+  socket.on('block', (data) => {
+    console.log('block: ', data);
+    state.block(player, data);
+  });
   // socket.on('hi', (data) => {
   //   io.sockets.emit('hi', data);
   //   console.log(data);

@@ -109,6 +109,8 @@ class GameState {
           this.p2Hand.push(card);
         } else if (this.phase === 'damage') {
           this.damage();
+        } else if (this.phase === 'block') {
+          this.priority = !(this.turn % 2 === 0);
         }
       // going to next turn
       } else {
@@ -118,7 +120,7 @@ class GameState {
         // heal all beings when turn is passed and reset resources for new player
         for (let i = 0; i < this.p1Field.length; i += 1) {
           if (this.p1Field[i].type === 'being') {
-            this.p1Field[i].hp = this.p1Field.d;
+            this.p1Field[i].hp = this.p1Field[i].d;
             if (this.turn % 2 === 0) {
               this.p1Field[i].act = false;
             }
@@ -126,7 +128,7 @@ class GameState {
         }
         for (let i = 0; i < this.p2Field.length; i += 1) {
           if (this.p2Field[i].type === 'being') {
-            this.p2Field[i].hp = this.p2Field.d;
+            this.p2Field[i].hp = this.p2Field[i].d;
             if (this.turn % 2 === 1) {
               this.p2Field[i].act = false;
             }
@@ -141,9 +143,9 @@ class GameState {
     }
     this.p1Pass = false;
     this.p2Pass = false;
-    if (this.turn % 2 === 0) {
+    if (this.turn % 2 === 0 && this.phase !== 'block') {
       this.priority = true;
-    } else {
+    } else if (this.turn % 2 === 1 && this.phase !== 'block') {
       this.priority = false;
     }
   }
@@ -204,14 +206,15 @@ class GameState {
   }
 
   checkState() {
+    console.log('CheckState: ', this.p1Field, this.p2Field)
     for (let i = 0; i < this.p1Field.length; i += 1) {
-      if (this.p1Field[i].type === 'being' && this.p1Field.hp <= 0) {
+      if (this.p1Field[i].type === 'being' && this.p1Field[i].hp <= 0) {
         this.p1Field.splice(i, 1);
         i -= 1;
       }
     }
     for (let i = 0; i < this.p2Field.length; i += 1) {
-      if (this.p2Field[i].type === 'being' && this.p2Field.hp <= 0) {
+      if (this.p2Field[i].type === 'being' && this.p2Field[i].hp <= 0) {
         this.p2Field.splice(i, 1);
         i -= 1;
       }
@@ -243,6 +246,7 @@ class GameState {
 
   block(player, arrOfTuples) {
     // in each tuple, first number is blocker index, second is attacker index
+    // in their respective fields
     if (player === 1 && this.phase === 'block' && this.turn % 2 === 1) {
       this.blocking = arrOfTuples;
     } else if (player === 2 && this.phase === 'block' && this.turn % 2 === 0) {
@@ -258,8 +262,12 @@ class GameState {
     if (this.turn % 2 === 0) {
       for (let i = 0; i < this.blocking.length; i += 1) {
         // blockers deal damage
+        console.log('blocker deal damage');
         this.p1Field[this.blocking[i][1]].hp -= this.p2Field[this.blocking[i][0]].a;
-        if (!dealt[this.blocking[i][1]]) {
+        console.log(this.blocking[i][1]);
+        if (dealt[this.blocking[i][1]] === undefined) {
+          console.log('attacker deal damage');
+          // if attacker hasn't dealt damage yet, it deals damage to this blocker
           dealt[this.blocking[i][1]] = true;
           this.p2Field[this.blocking[i][0]].hp -= this.p1Field[this.blocking[i][1]].a;
         }
@@ -274,8 +282,11 @@ class GameState {
     } else {
       for (let i = 0; i < this.blocking.length; i += 1) {
         // blockers deal damage
+        console.log('blocker deal damage');
         this.p2Field[this.blocking[i][1]].hp -= this.p1Field[this.blocking[i][0]].a;
-        if (!dealt[this.blocking[i][1]]) {
+        console.log(this.blocking[i][1]);
+        if (dealt[this.blocking[i][1]] === undefined) {
+          console.log('attacker deal damage');
           dealt[this.blocking[i][1]] = true;
           this.p1Field[this.blocking[i][0]].hp -= this.p2Field[this.blocking[i][1]].a;
         }

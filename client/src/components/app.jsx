@@ -57,12 +57,15 @@ export default class App extends React.Component {
       socket: null,
       attackers: [],
       attackerObj: {},
+      blockers: [],
+      blockerTupple: [],
     };
 
     // socket.emit('event', 'data');
     this.play = this.play.bind(this);
     this.pass = this.pass.bind(this);
     this.fieldPlay = this.fieldPlay.bind(this);
+    this.oppClick = this.oppClick.bind(this);
   }
 
 
@@ -81,8 +84,8 @@ export default class App extends React.Component {
   }
 
   pass() {
+    // if there are attackers, output attack command
     if (this.state.attackers.length !== 0) {
-
       // make sure to transmit numbers
       for (let i = 0; i < this.state.attackers.length; i += 1) {
         this.state.attackers[i] = Number(this.state.attackers[i]);
@@ -91,6 +94,12 @@ export default class App extends React.Component {
       this.state.socket.emit('attack', this.state.attackers);
       this.state.attackers = [];
       this.state.attackerObj = {};
+      return;
+    }
+    if (this.state.blockers.length !== 0) {
+      this.state.socket.emit('block', this.state.blockers);
+      this.state.blockerTupple = [];
+      this.state.blockers = [];
       return;
     }
     this.state.socket.emit('pass');
@@ -102,6 +111,22 @@ export default class App extends React.Component {
       this.state.attackerObj[i] = !this.state.attackerObj[i];
       this.state.attackers = Object.keys(this.state.attackerObj);
     }
+    if (this.state.gameState.phase === 'block') {
+      if (this.state.blockerTupple.length === 0) {
+        this.state.blockerTupple[0] = i;
+      } else if (this.state.blockerTupple.length === 1) {
+        this.state.blockerTupple = [i];
+      }
+    }
+  }
+
+  oppClick(action, i) {
+    if (this.state.gameState.phase === 'block') {
+      if (this.state.blockerTupple.length === 1) {
+        this.state.blockerTupple[1] = i;
+        this.state.blockers.push(this.state.blockerTupple);
+      }
+    }
   }
 
   render() {
@@ -111,7 +136,7 @@ export default class App extends React.Component {
           <InfoBar state={this.state.gameState} pass={this.pass} />
         </InfoWrapper>
         <FieldHandWrapper>
-          <Field field={this.state.gameState.oppField} owner="Opponent's" />
+          <Field field={this.state.gameState.oppField} owner="Opponent's" play={this.oppClick} />
           <Field field={this.state.gameState.yourField} owner="Your" play={this.fieldPlay} />
           <Hand hand={this.state.gameState.hand} play={this.play} />
         </FieldHandWrapper>
