@@ -44,12 +44,12 @@ const Act = styled.div`
   color: red;
 `;
 
-const AD = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  justify-self: flex-end;
-  order: 1;
+const A = styled.span`
+  display: inline-block;
+`;
+
+const D = styled(A)`
+  color: ${(props) => (props.card.hp < props.card.d ? 'red' : (props.card.hp === props.card.d ? 'black' : 'green'))}
 `;
 
 const ImgWrapper = styled.div`
@@ -76,7 +76,7 @@ export default function Card(props) {
           {props.card.type}
         </TypeLine>
         <RulesBox>{props.card.rulesText}</RulesBox>
-        <AD>{' '}</AD>
+        {/* <AD>{' '}</AD> */}
       </OutterWrapper>
     );
   }
@@ -98,7 +98,7 @@ export default function Card(props) {
           <Act>
             {props.card.act ? 'Activated (attacked)' : null}
           </Act>
-          <AD>{`${props.card.a}/${props.card.d}`}</AD>
+          <span><A>{`${props.card.a}/`}</A><D card={props.card}>{`${props.card.hp}`}</D></span>
         </Bottom>
       </OutterWrapper>
     );

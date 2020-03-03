@@ -151,11 +151,11 @@ class GameState {
   }
 
   pass(player) {
-    if (player === 1) {
+    if (player === 1 && this.priority) {
       this.p1Pass = true;
       this.priority = !this.priority;
     }
-    if (player === 2) {
+    if (player === 2 && !this.priority) {
       this.p2Pass = true;
       this.priority = !this.priority;
     }
@@ -166,7 +166,7 @@ class GameState {
 
   play(player, i) {
     let card = {};
-    if (player === 1 && this.priority === true) {
+    if (player === 1 && this.priority) {
       if (this.p1Hand[i].cost > this.p1Avail) {
         return;
       }
@@ -179,7 +179,7 @@ class GameState {
         return;
       }
       this.p1Avail -= card.cost;
-    } else if (player === 2) {
+    } else if (player === 2 && !this.priority) {
       // don't allow cards with cost more than available resource to be played
       if (this.p2Hand[i].cost > this.p2Avail) {
         return;

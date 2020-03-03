@@ -12,15 +12,15 @@ import InfoBar from './infoBar.jsx';
 const OuterWrapper = styled.div`
   display: flex;
   flex-direction: row;
-  justy-content: space-between;
   width: 100%;
+  height: 100%;
 `;
 
 const InfoWrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  width: 20%;
+  width: 10%;
   height: 100%;
 `;
 
@@ -28,7 +28,8 @@ const FieldHandWrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  height: 750px;
+  height: 650px;
+  width: 100%;
 `;
 
 export default class App extends React.Component {
@@ -68,7 +69,6 @@ export default class App extends React.Component {
     this.oppClick = this.oppClick.bind(this);
   }
 
-
   componentDidMount() {
     // set up socket on component mount
     this.state.socket = io.connect('/');
@@ -76,6 +76,16 @@ export default class App extends React.Component {
       this.setState({ gameState: data });
       console.log(data);
     });
+    // set up key events
+    document.onkeydown = this.handleKeyPress.bind(this);
+  }
+
+  // handle keypresses
+  handleKeyPress(e) {
+    e = e || window.event;
+    if (e.keyCode == '50' || e.keyCode == '13' || e.keyCode == '32') {
+      this.pass();
+    }
   }
 
   // for playing from hand

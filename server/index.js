@@ -33,7 +33,11 @@ io.on('connection', (socket) => {
   console.log('made socket connection', socket.id);
   // socket.on('trigger', () => {})
   players += 1;
-  const player = players;
+  var player = players;
+  if (players > 2) {
+    players = 1;
+    player = 1;
+  }
   playerIds[player] = socket.id;
   io.to(playerIds[player]).emit('state', state.private(player));
 
