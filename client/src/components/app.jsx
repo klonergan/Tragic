@@ -28,7 +28,7 @@ const FieldHandWrapper = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  height: 650px;
+  height: 750px;
   width: 100%;
 `;
 

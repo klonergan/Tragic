@@ -164,10 +164,10 @@ class GameState {
     }
   }
 
-  play(player, i) {
+  play(player, i, target) {
     let card = {};
     if (player === 1 && this.priority) {
-      if (this.p1Hand[i].cost > this.p1Avail) {
+      if (this.p1Hand[i].cost > this.p1Avail || (this.p1Hand[i].type === 'resource' && (this.turn % 2 !== 0 || this.phase !== 'main'))) {
         return;
       }
       // eslint-disable-next-line prefer-destructuring
@@ -181,12 +181,10 @@ class GameState {
       this.p1Avail -= card.cost;
     } else if (player === 2 && !this.priority) {
       // don't allow cards with cost more than available resource to be played
-      if (this.p2Hand[i].cost > this.p2Avail) {
+      // don't allow resource plays outside main phase
+      if (this.p2Hand[i].cost > this.p2Avail || (this.p2Hand[i].type === 'resource' && (this.turn % 2 !== 1 || this.phase !== 'main'))) {
         return;
         // don't allow land plays outside of own main phase
-      }
-      if (this.p2Hand[i].type === 'resource' && (this.turn % 2 !== 1 || this.phase !== 'main')) {
-        return;
       }
       // eslint-disable-next-line prefer-destructuring
       card = this.p2Hand.splice(i, 1)[0];
